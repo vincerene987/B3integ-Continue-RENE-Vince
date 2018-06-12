@@ -1,0 +1,63 @@
+---
+
+- hosts: servers
+
+  tasks:
+  
+  
+   - name: Installation du JDK8
+     package: name=openjdk-8-jdk-headless state=present
+
+     
+   - name: Création d'un User wildfly
+     user:
+       name: wildfly
+       comment: wildfly
+       system: yes
+       home: /home/wildfly
+       shell: /bin/false
+
+       
+   - name: Obtention archive wildfly
+     unarchive:
+       src:     
+       dest: /opt/wildfly
+       owner: wildfly
+       remote_src: yes
+       
+       
+   - name: Rename wildfly
+     command: mv /opt/wildfly-11.0.0.Final /opt/wildfly
+     
+     
+   - name: Configuration de wildfly
+     copy:
+       src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.conf
+       dest: /etc/wildfly
+       owner: wildfly
+       remote_src: yes
+
+       
+   - name: Copie du service
+     copy:
+       src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.service
+       dest: /etc/systemd/system
+       owner: wildfly
+       remote_src: yes
+
+           
+       - name: Copie du Lanceur
+     copy:
+       src: /opt/wildfly/docs/contrib/scripts/systemd/launch.sh
+       dest: /opt/wildfly/bin
+       owner: wildfly
+       mode: 0644
+       remote_src: yes
+
+       
+   - name: Ajout de wildfly dans les Daemon
+     systemd:
+       state: restarted
+       daemon_reload: yes
+       name: wildfly
+
